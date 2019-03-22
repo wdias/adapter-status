@@ -1,4 +1,4 @@
-FROM node:10.10.0-slim
+FROM node:11.11-slim
 
 RUN npm install --global nodemon
 # TODO: Use package.json TypeScript version
