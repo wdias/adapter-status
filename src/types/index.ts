@@ -1,4 +1,4 @@
-import { Decoder, object, string, optional, number, array, oneOf, constant } from '@mojotech/json-type-validation';
+import { Decoder, object, string, oneOf, constant, optional } from '@mojotech/json-type-validation';
 
 // 1. ModuleId
 // 2. ValueType
@@ -96,3 +96,18 @@ export type TimeSeries = {
   metadataIds: MetadataIds,
   data: DataPoint[],
 }
+
+// Status
+export type Status = {
+  requestId: string,
+  service: string,
+  type: string,
+  extensionId?: string,
+}
+
+export const statusDecoder: Decoder<Status> = object({
+  requestId: string(),
+  service: oneOf(constant('Import'), constant('Export'), constant('Extension')),
+  type: oneOf(constant('Scalar'), constant('Vector'), constant('Grid'), constant('Transformation'), constant('Validation'), constant('Interpolation')),
+  extensionId: optional(string()),
+});
