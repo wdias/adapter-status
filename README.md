@@ -1,2 +1,2 @@
-# import-json-raw
-Import JSON as Raw data microservice.
+# adapter-status
+Status Adapter microservice of WDIAS.
