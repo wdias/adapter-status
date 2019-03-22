@@ -102,12 +102,12 @@ export type Status = {
   requestId: string,
   service: string,
   type: string,
-  extensionId?: string,
+  extensionFunction?: string,
 }
 
 export const statusDecoder: Decoder<Status> = object({
   requestId: string(),
   service: oneOf(constant('Import'), constant('Export'), constant('Extension')),
   type: oneOf(constant('Scalar'), constant('Vector'), constant('Grid'), constant('Transformation'), constant('Validation'), constant('Interpolation')),
-  extensionId: optional(string()),
+  extensionFunction: optional(string()),
 });

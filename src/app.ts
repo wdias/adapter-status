@@ -19,30 +19,31 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator());
 
 export const initDatabase = async () => {
-  const redisSVC: string = 'adapter-status-redis.default.svc.cluster.local'
+  const redisSVC: string = 'adapter-redis-master.default.svc.cluster.local'
   client = redis.createClient({
     host: redisSVC,
+    password: 'wdias123',
+    db: 2,
   });
   client.on("ready", (err) => {
-    console.log("Error " + err);
+    console.log("Redis Client is ready !");
   }).on("error", (err) => {
     console.log("Error " + err);
-    client.quit();
   });
 }
 
-const getHash = (service: string, type: string, requestId: string, extensionId?: string) => {
+const getHash = (service: string, type: string, requestId: string, extensionFunction?: string) => {
   // service: import | export | extension
   const getService = (s: string) => {
     const serviceMap: { [key: string]: string } = {
-      'import': 'i',
-      'export': 'e',
-      'extension': 'x',
+      'Import': 'i',
+      'Export': 'e',
+      'Extension': 'x',
     };
     return serviceMap[s];
   }
   // type: scalar | vector | grid | transformation | validation | interpolation
-  return `${requestId}:s${getService(service)}:t${type.substr(0, 2)}${extensionId ? `:e${extensionId}` : ''}`;
+  return `${requestId}:s${getService(service)}:t${type.substr(0, 2).toLocaleLowerCase()}${extensionFunction ? `:e${extensionFunction.toLocaleLowerCase()}` : ''}`;
 }
 
 const setStatus = (hash: string, timeseriesId: string): Promise<boolean> => {
@@ -69,21 +70,20 @@ const getStatus = (hash: string): Promise<string> => {
   });
 }
 
-app.post('/status/:timeseriesId', async (req: Request, res: Response) => {
+app.post('/:timeseriesId', async (req: Request, res: Response) => {
   try {
     const timeseriesId: string = req.params.timeseriesId;
-    console.log('timeseriesId: ', req.params.timeseriesId);
     const data: JSON = req.body;
-    console.log('data: ', data);
     const s: Status = statusDecoder.runWithException(data);
-    const isSet: boolean = await setStatus(getHash(s.service, s.type, s.requestId, s.extensionId), timeseriesId);
+    console.log(timeseriesId, ', data: ', s);
+    const isSet: boolean = await setStatus(getHash(s.service, s.type, s.requestId, s.extensionFunction), timeseriesId);
     isSet ? res.send('OK') : res.status(400).send(`Unable to set requestId:${s.requestId}`);
   } catch (e) {
     res.status(500).send(e.toString());
   }
 });
 
-app.get('/status/import/:valueType/:requestId', async (req: Request, res: Response) => {
+app.get('/import/:valueType/:requestId', async (req: Request, res: Response) => {
   try {
     const valueType: string = req.params.valueType;
     const requestId: string = req.params.requestId;
@@ -95,7 +95,7 @@ app.get('/status/import/:valueType/:requestId', async (req: Request, res: Respon
   }
 });
 
-app.get('/status/export/:valueType/:requestId', async (req: Request, res: Response) => {
+app.get('/export/:valueType/:requestId', async (req: Request, res: Response) => {
   try {
     const valueType: string = req.params.valueType;
     const requestId: string = req.params.requestId;
@@ -107,20 +107,20 @@ app.get('/status/export/:valueType/:requestId', async (req: Request, res: Respon
   }
 });
 
-app.get('/status/extension/:extension/:extensionId/:requestId', async (req: Request, res: Response) => {
+app.get('/extension/:extension/:extensionFunction/:requestId', async (req: Request, res: Response) => {
   try {
     const extension: string = req.params.extension;
-    const extensionId: string = req.params.extensionId;
+    const extensionFunction: string = req.params.extensionFunction;
     const requestId: string = req.params.requestId;
-    console.log('extension: ', req.params.extension, ', extensionId:', extensionId, ', requestId:', requestId);
-    const timeseriesId: string = await getStatus(getHash('Extension', extension, requestId, extensionId));
+    console.log('extension: ', req.params.extension, ', extensionFunction:', extensionFunction, ', requestId:', requestId);
+    const timeseriesId: string = await getStatus(getHash('Extension', extension, requestId, extensionFunction));
     timeseriesId ? res.send(timeseriesId) : res.status(400).send(`Status not found requestId:${requestId}`);
   } catch (e) {
     res.status(500).send(e.toString());
   }
 });
 
-app.get('/status/public/hc', (req: Request, res: Response) => {
+app.get('/public/hc', (req: Request, res: Response) => {
   console.log('Status Health Check');
   res.send('OK');
 });
