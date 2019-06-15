@@ -73,12 +73,14 @@ const getStatus = (hash: string): Promise<string> => {
 app.post('/:timeseriesId', async (req: Request, res: Response) => {
   try {
     const timeseriesId: string = req.params.timeseriesId;
+    console.log('Set Status: ', timeseriesId);
     const data: JSON = req.body;
     const s: Status = statusDecoder.runWithException(data);
     console.log(timeseriesId, ', data: ', s);
     const isSet: boolean = await setStatus(getHash(s.service, s.type, s.requestId, s.extensionFunction), timeseriesId);
     isSet ? res.send('OK') : res.status(400).send(`Unable to set requestId:${s.requestId}`);
   } catch (e) {
+    console.error(e);
     res.status(500).send(e.toString());
   }
 });
@@ -91,6 +93,7 @@ app.get('/import/:valueType/:requestId', async (req: Request, res: Response) => 
     const timeseriesId: string = await getStatus(getHash('Import', valueType, requestId));
     timeseriesId ? res.send(timeseriesId) : res.status(400).send(`Status not found requestId:${requestId}`);
   } catch (e) {
+    console.error(e);
     res.status(500).send(e.toString());
   }
 });
@@ -103,6 +106,7 @@ app.get('/export/:valueType/:requestId', async (req: Request, res: Response) => 
     const timeseriesId: string = await getStatus(getHash('Export', valueType, requestId));
     timeseriesId ? res.send(timeseriesId) : res.status(400).send(`Status not found requestId:${requestId}`);
   } catch (e) {
+    console.error(e);
     res.status(500).send(e.toString());
   }
 });
@@ -116,6 +120,7 @@ app.get('/extension/:extension/:extensionFunction/:requestId', async (req: Reque
     const timeseriesId: string = await getStatus(getHash('Extension', extension, requestId, extensionFunction));
     timeseriesId ? res.send(timeseriesId) : res.status(400).send(`Status not found requestId:${requestId}`);
   } catch (e) {
+    console.error(e);
     res.status(500).send(e.toString());
   }
 });
