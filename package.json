@@ -39,7 +39,7 @@
   "homepage": "https://github.com/wdias/import-json-raw#readme",
   "dependencies": {
     "@mojotech/json-type-validation": "^3.0.0",
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "body-parser": "^1.18.3",
     "compression": "^1.7.3",
     "errorhandler": "^1.5.0",
@@ -55,7 +55,7 @@
     "@types/errorhandler": "0.0.32",
     "@types/express": "^4.16.0",
     "@types/express-validator": "^3.0.0",
-    "@types/node": "^10.11.7",
+    "@types/node": "^10.17.5",
     "@types/redis": "^2.8.11",
     "@types/request": "^2.47.1",
     "ts-node": "^7.0.1",
